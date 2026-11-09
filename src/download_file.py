@@ -104,7 +104,7 @@ def main() -> None:
 
     snapshots = pending_snapshots(LOG_DIR)
     if not snapshots:
-        print("No valid pending snapshots. Run python3 checking_ztf.py --pending first.")
+        print("No valid pending snapshots. Run python3 -m src.checking_ztf --pending first.")
         return
     if len(snapshots) == 1:
         print("Only one valid pending snapshot. It is the baseline. Check pending jobs again later.")

@@ -15,7 +15,7 @@ Use the 2023 guide for batch submission and retrieval. Use the v2.3 guide when w
 
 1. Email `ztf@ipac.caltech.edu` to request access to the **ZTF Forced Photometry Service (ZFPS)**. Include your affiliation and mention any membership in the ZTF Partnership or Caltech ZTF Project. Use your institutional address if available. IPAC issues a personal password and sends completion notices to the address you registered. Accounts from the original service were enrolled in the batch service with the same privileges, according to the 2023 guide.
 2. When your browser displays the HTTP authentication dialog for a ZFPS page or download, enter the shared username `ztffps` and the shared service password. Both PDFs publish `dontgocrazy!` as the shared password at the time of writing. Check the [ZFPS service page](https://ztfweb.ipac.caltech.edu/batchfp.html) for credential or maintenance updates.
-3. When the **web form** asks for account details, enter your registered email and the personal password IPAC issued to you. Appendix A calls this password `userpass`. For the workspace script, set the following values in the local `.env` beside `submit_ztf.py`.
+3. When the **web form** asks for account details, enter your registered email and the personal password IPAC issued to you. Appendix A calls this password `userpass`. For the workspace script, set the following values in the local `.env` at the repository root.
 
    | Key | Value |
    | --- | --- |
@@ -38,7 +38,7 @@ The shared credentials open the service. The personal credentials associate requ
 Install the submission dependencies if needed with `python3 -m pip install requests python-dotenv astropy`. Run this from the workspace with your desired position and dates.
 
 ```bash
-python3 submit_ztf.py \
+python3 -m src.submit_ztf \
   --position '10h25m30.29s +14d02m07.3s' \
   --mjd-start 58194 --mjd-end 61000 \
   --dry-run
@@ -66,11 +66,11 @@ For an original single-position job, use the [single-position status form](https
 
 ### Check a batch job from Python
 
-Run [`checking_ztf.py`](checking_ztf.py) from the workspace. It reads the same `.env` as the submitter and prints the status response and any completed light-curve links. If needed, install its dependencies with `python3 -m pip install requests python-dotenv beautifulsoup4`.
+Run [`src.checking_ztf`](src/checking_ztf.py) as a module from the repository root. It reads the same `.env` as the submitter and prints the status response and any completed light-curve links. If needed, install its dependencies with `python3 -m pip install requests python-dotenv beautifulsoup4`.
 
 ```bash
-python3 checking_ztf.py            # All recent jobs
-python3 checking_ztf.py --pending  # Pending jobs only
+python3 -m src.checking_ztf            # All recent jobs
+python3 -m src.checking_ztf --pending  # Pending jobs only
 ```
 
 The script follows Appendix B. It sends an HTTP GET to the batch status URL with `email`, `userpass`, `option` (`All recent jobs` or `Pending jobs`), and `action` (`Query Database`).
@@ -83,12 +83,12 @@ An HTTP 200 can return a page with no completed products. Use the browser's stat
 
 ### Save the light-curve files
 
-Use [`download_file.py`](download_file.py) to download finished products that were previously pending. Save an initial pending snapshot with `python3 checking_ztf.py --pending`. The first snapshot serves as a baseline. After a later status refresh, run the following commands.
+Use [`download_file.py`](src/download_file.py) to download finished products that were previously pending. Save an initial pending snapshot with `python3 -m src.checking_ztf --pending`. The first snapshot serves as a baseline. After a later status refresh, run the following commands.
 
 ```bash
-python3 checking_ztf.py --pending
-python3 checking_ztf.py
-python3 download_file.py --dry-run
+python3 -m src.checking_ztf --pending
+python3 -m src.checking_ztf
+python3 -m src.download_file --dry-run
 ```
 
 Remove `--dry-run` to save eligible products to `download/`. The downloader checks IDs seen in earlier valid pending snapshots against the latest valid snapshot. It requires a matching product link in a finished log, so a request can still be picked up if its link appears in a later check. Existing files are skipped.
@@ -179,7 +179,7 @@ Within a filter, use a time bin in which the signal can reasonably be treated as
 
 | Feature | Current entry point or implementation guideline |
 | --- | --- |
-| Submit a position or coordinate list | [`submit_ztf.py`](submit_ztf.py) accepts decimal degrees or HMS/DMS, JD or MJD bounds, and a credential-free `--dry-run`. |
-| Read output and provenance | [`read_ztf.py`](read_ztf.py) exposes `read_ztf_lightcurve(path)` for a DataFrame and `read_ztf_header(path)` for header text. |
-| Verify reader compatibility | The [local example](Liu_IMBH/batchfp_req0005176276_lc.txt) has 1,417 rows and 41 columns, including signed PSF difference fluxes. The current reader expects a one-line column header starting with `sindex`. Supporting older `index` or wrapped headers requires additional reader compatibility work. |
+| Submit a position or coordinate list | [`submit_ztf.py`](src/submit_ztf.py) accepts decimal degrees or HMS/DMS, JD or MJD bounds, and a credential-free `--dry-run`. |
+| Read output and provenance | [`read_ztf.py`](src/read_ztf.py) exposes `read_ztf_lightcurve(path)` for a DataFrame and `read_ztf_header(path)` for header text. |
+| Verify reader compatibility | The example download `batchfp_req0005176471_lc.txt` has 1,661 rows and 41 columns, including signed PSF difference fluxes. The current reader expects a one-line column header starting with `sindex`. Supporting older `index` or wrapped headers requires additional reader compatibility work. |
 | Extend the workflow | Keep downloading separate from submission and status checks. Keep filtering, calibration, and plotting separate from parsing. Carry quality flags, reference group, correction history, and upper-limit status into derived products. |
