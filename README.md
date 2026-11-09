@@ -2,21 +2,21 @@
 
 Submit targets to IPAC's ZTF Forced Photometry Service (ZFPS), track the queue, download completed light curves, and export the measurements as CSV. Run the commands from this directory.
 
-| Module | What it does |
+| Command | What it does |
 | --- | --- |
-| [`src.submit_ztf`](src/submit_ztf.py) | Submit one target or a batch using JD or MJD bounds. |
-| [`src.checking_ztf`](src/checking_ztf.py) | Query pending or recent jobs and save UTC status reports. |
-| [`src.download_file`](src/download_file.py) | Compare pending snapshots and download products confirmed by the finished log. |
-| [`src.read_ztf`](src/read_ztf.py) | Convert `download/*.txt` to `csv/*.csv` or read a single file from Python. |
+| [`submit_ztf`](src/submit_ztf.py) | Submit one target or a batch using JD or MJD bounds. |
+| [`checking_ztf`](src/checking_ztf.py) | Query pending or recent jobs and save UTC status reports. |
+| [`download_file`](src/download_file.py) | Compare pending snapshots and download products confirmed by the finished log. |
+| [`read_ztf`](src/read_ztf.py) | Convert `download/*.txt` to `csv/*.csv` or read a single file from Python. |
 
 If you already have ZTF text files in `download/`, go straight to the [CSV export step](#5-export-csvs-or-read-a-light-curve-in-python).
 
 ## 1. Set up Python and ZFPS credentials
 
-Use Python 3.11 or later. Install the dependencies in your Python environment.
+Use Python 3.11 or later. From the repository root, install the project in editable mode in your active Python environment. This installs the dependencies and the four commands.
 
 ```bash
-python3 -m pip install astropy beautifulsoup4 pandas python-dotenv requests
+python3 -m pip install -e .
 ```
 
 If you need a ZFPS account, email `ztf@ipac.caltech.edu` to register. If you do not already have a local `.env`, copy the template to `.env` at the repository root. Fill in all three values in your local copy. [Credential template](.env.example)
@@ -28,7 +28,7 @@ The shared password is for the `ztffps` service login. The personal password ide
 Validate a single target and date range with a dry run.
 
 ```bash
-python3 -m src.submit_ztf \
+submit_ztf \
   --position '10h25m30.29s +14d02m07.3s' \
   --mjd-start 58194 --mjd-end 61000 \
   --dry-run
@@ -45,7 +45,7 @@ For a batch, create a headerless `targets.txt` with one space-separated RA and D
 ```
 
 ```bash
-python3 -m src.submit_ztf --coordinates targets.txt \
+submit_ztf --coordinates targets.txt \
   --mjd-start 58194 --mjd-end 61000 --dry-run
 ```
 
@@ -54,7 +54,7 @@ Each batch accepts up to 1,500 positions and shares one date range. The script c
 ## 3. Capture a pending snapshot
 
 ```bash
-python3 -m src.checking_ztf --pending
+checking_ztf --pending
 ```
 
 Save a snapshot while the requests you want to track are still pending or running. The first valid pending snapshot establishes the baseline. IPAC refreshes the status database hourly. If a new submission is missing, check again after the next refresh and search by request ID or coordinates. [ZFPS feature guidelines](ZTF_FEATURE_GUIDELINES.md#check-status-and-download-results)
@@ -64,21 +64,21 @@ Save a snapshot while the requests you want to track are still pending or runnin
 After a later queue refresh, save another pending snapshot and query recent jobs for the product links.
 
 ```bash
-python3 -m src.checking_ztf --pending
-python3 -m src.checking_ztf
-python3 -m src.download_file --dry-run
+checking_ztf --pending
+checking_ztf
+download_file --dry-run
 ```
 
 A request qualifies for download if it appeared in an earlier pending snapshot, is absent from the latest valid one, and has a matching product link in a finished log. Keep earlier pending logs so requests remain eligible if their links appear later.
 
-When the preview shows the expected files, run `python3 -m src.download_file` to save them in `download/`. Reruns skip files already saved there. If a job finished before you captured it in a pending snapshot, use its link in the finished log or completion email.
+When the preview shows the expected files, run `download_file` to save them in `download/`. Reruns skip files already saved there. If a job finished before you captured it in a pending snapshot, use its link in the finished log or completion email.
 
 ## 5. Export CSVs or read a light curve in Python
 
 Run this command to convert the ZTF text files in `download/` to same-named CSV files in `csv/`.
 
 ```bash
-python3 -m src.read_ztf
+read_ztf
 ```
 
 For example, `download/batchfp_req0005176471_lc.txt` becomes `csv/batchfp_req0005176471_lc.csv`. The CSV contains the measurement columns and all epochs, with blank cells for missing values. Rerunning the command skips existing CSVs.
@@ -100,14 +100,14 @@ Use the original text file to read its request metadata with `read_ztf_header()`
 
 ## Project layout
 
-The four workflow scripts live in [`src/`](src/). Run them with `python3 -m src.<module>` from the repository root. The root [`config.py`](config.py) defines the shared paths and IPAC service URLs. Credentials come from `.env` at the repository root.
+The workflow scripts live in [`src/`](src/). [`pyproject.toml`](pyproject.toml) defines the commands, and [`config.py`](config.py) defines the source directory, shared paths, and IPAC service URLs. The editable install uses `.env` and the data folders at the repository root. You can also run `python3 -m src.<module>` from the repository root.
 
 ## Where the files go
 
 | Path | Contents |
 | --- | --- |
 | `job/submission_*.jsonl` | Submitted coordinates, JD bounds, and the HTTP result or network error. |
-| `log/pending_*.log` | Queue snapshots created with `python3 -m src.checking_ztf --pending`. |
+| `log/pending_*.log` | Queue snapshots created with `checking_ztf --pending`. |
 | `log/check_*.log` | Full recent-jobs reports, ordered by processing state and then newest submission. |
 | `log/finished_*.log` | Finished jobs, newest completion first, with exit codes and available product links. |
 | `download/*_lc.txt` | Original IPAC light-curve files, including request metadata. |

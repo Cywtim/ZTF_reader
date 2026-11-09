@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+SRC_DIR = ROOT / "src"
 ENV_FILE = ROOT / ".env"
 JOB_DIR = ROOT / "job"
 LOG_DIR = ROOT / "log"
