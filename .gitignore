@@ -1,0 +1,9 @@
+/.env
+/job/*
+!/job/.gitkeep
+/log/*
+!/log/.gitkeep
+/download/*
+!/download/.gitkeep
+/csv/*
+!/csv/.gitkeep
