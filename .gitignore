@@ -7,3 +7,4 @@
 !/download/.gitkeep
 /csv/*
 !/csv/.gitkeep
+__pycache__/

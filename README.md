@@ -98,6 +98,10 @@ print(df[["jd", "filter", "forcediffimflux", "forcediffimfluxunc"]].head())
 
 Use the original text file to read its request metadata with `read_ztf_header()`. The DataFrame reader keeps every epoch and maps ZTF's `-99999` missing-value marker to `NaN`. For quality cuts, grouping by reference image, and calibration, see the [photometry guidelines](ZTF_FEATURE_GUIDELINES.md#filter-group-and-validate-the-photometry).
 
+## Project layout
+
+The four Python files at the repository root are command-line entry points. Their implementations live in [`src/`](src/), and [`config.py`](config.py) defines the shared workspace paths and IPAC service URLs. Credentials are read from the local `.env`.
+
 ## Where the files go
 
 | Path | Contents |
