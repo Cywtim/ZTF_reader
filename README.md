@@ -2,12 +2,12 @@
 
 Submit targets to IPAC's ZTF Forced Photometry Service (ZFPS), track the queue, download completed light curves, and export the measurements as CSV. Run the commands from this directory.
 
-| Script | What it does |
-| --- | --- |
-| [`submit_ztf.py`](submit_ztf.py) | Submit one target or a batch using JD or MJD bounds. |
-| [`checking_ztf.py`](checking_ztf.py) | Query pending or recent jobs and save UTC status reports. |
-| [`download_file.py`](download_file.py) | Compare pending snapshots and download products confirmed by the finished log. |
-| [`read_ztf.py`](read_ztf.py) | Convert `download/*.txt` to `csv/*.csv` or read a single file from Python. |
+| Command | Implementation | What it does |
+| --- | --- | --- |
+| [`submit_ztf.py`](submit_ztf.py) | [`submission.py`](src/submission.py) | Submit one target or a batch using JD or MJD bounds. |
+| [`checking_ztf.py`](checking_ztf.py) | [`status.py`](src/status.py) | Query pending or recent jobs and save UTC status reports. |
+| [`download_file.py`](download_file.py) | [`products.py`](src/products.py) | Compare pending snapshots and download products confirmed by the finished log. |
+| [`read_ztf.py`](read_ztf.py) | [`lightcurve.py`](src/lightcurve.py) | Convert `download/*.txt` to `csv/*.csv` or read a single file from Python. |
 
 If you already have ZTF text files in `download/`, go straight to the [CSV export step](#5-export-csvs-or-read-a-light-curve-in-python).
 

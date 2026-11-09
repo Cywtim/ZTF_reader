@@ -1,6 +1,6 @@
 """Read or convert downloaded ZTF light curves."""
 
-from src.read_ztf import main, read_ztf_header, read_ztf_lightcurve
+from src.lightcurve import main, read_ztf_header, read_ztf_lightcurve
 
 
 __all__ = ["main", "read_ztf_header", "read_ztf_lightcurve"]

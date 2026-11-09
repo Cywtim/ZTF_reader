@@ -1,6 +1,6 @@
 """Submit ZTF forced-photometry requests."""
 
-from src.submit_ztf import main, parse_position
+from src.submission import main, parse_position
 
 
 __all__ = ["main", "parse_position"]
