@@ -19,6 +19,8 @@ Use Python 3.11 or later. From the repository root, install the project in edita
 python3 -m pip install -e .
 ```
 
+To install the Python dependencies separately, run `python3 -m pip install -r requirements.txt`. The editable install reads from the same [dependency list](requirements.txt).
+
 If you need a ZFPS account, email `ztf@ipac.caltech.edu` to register. If you do not already have a local `.env`, copy the template to `.env` at the repository root. Fill in all three values in your local copy. [Credential template](.env.example)
 
 The shared password is for the `ztffps` service login. The personal password identifies your ZFPS account. Keep `.env` local. For registration and browser sign-in, see the [feature guidelines](ZTF_FEATURE_GUIDELINES.md).

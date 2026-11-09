@@ -1,0 +1,5 @@
+astropy
+beautifulsoup4
+pandas
+python-dotenv
+requests

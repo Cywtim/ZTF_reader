@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=66.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,13 +8,7 @@ version = "0.1.0"
 description = "Submit, track, download, and read ZTF forced-photometry light curves."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "astropy",
-    "beautifulsoup4",
-    "pandas",
-    "python-dotenv",
-    "requests",
-]
+dynamic = ["dependencies"]
 
 [project.scripts]
 submit_ztf = "src.submit_ztf:main"
@@ -25,3 +19,6 @@ read_ztf = "src.read_ztf:main"
 [tool.setuptools]
 packages = ["src"]
 py-modules = ["config"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
