@@ -100,6 +100,10 @@ def download_product(session: requests.Session, url: str, destination: Path) -> 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="List eligible files without downloading")
+    parser.add_argument(
+        "--previous-only", action="store_true",
+        help="Compare only the two newest valid pending snapshots",
+    )
     args = parser.parse_args()
 
     snapshots = pending_snapshots(LOG_DIR)
@@ -110,10 +114,16 @@ def main() -> None:
         print("Only one valid pending snapshot. It is the baseline. Check pending jobs again later.")
         return
 
-    latest = snapshots[max(snapshots)]
-    disappeared = set().union(*snapshots.values()) - latest
+    if args.previous_only:
+        current, previous = sorted(snapshots, reverse=True)[:2]
+        disappeared = snapshots[previous] - snapshots[current]
+        empty_message = "No requests left the queue between the two newest valid pending snapshots."
+    else:
+        latest = snapshots[max(snapshots)]
+        disappeared = set().union(*snapshots.values()) - latest
+        empty_message = "No previously pending requests have left the latest pending snapshot."
     if not disappeared:
-        print("No previously pending requests have left the latest pending snapshot.")
+        print(empty_message)
         return
 
     products = finished_products(LOG_DIR, disappeared)
