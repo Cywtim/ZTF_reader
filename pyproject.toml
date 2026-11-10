@@ -15,6 +15,7 @@ submit_ztf = "src.submit_ztf:main"
 checking_ztf = "src.checking_ztf:main"
 download_file = "src.download_file:main"
 read_ztf = "src.read_ztf:main"
+ztf_flux_reader = "src.ztf_flux_reader:main"
 
 [tool.setuptools]
 packages = ["src"]

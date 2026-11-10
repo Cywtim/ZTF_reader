@@ -9,3 +9,5 @@
 !/csv/.gitkeep
 __pycache__/
 *.egg-info/
+/flux/*
+!/flux/.gitkeep

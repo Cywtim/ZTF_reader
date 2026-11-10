@@ -10,6 +10,7 @@ JOB_DIR = ROOT / "job"
 LOG_DIR = ROOT / "log"
 DOWNLOAD_DIR = ROOT / "download"
 CSV_DIR = ROOT / "csv"
+FLUX_DIR = ROOT / "flux"
 
 HOST = "https://ztfweb.ipac.caltech.edu"
 SUBMIT_URL = HOST + "/cgi-bin/batchfp.py/submit"

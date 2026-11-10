@@ -8,6 +8,7 @@ Submit targets to IPAC's ZTF Forced Photometry Service (ZFPS), track the queue, 
 | [`checking_ztf`](src/checking_ztf.py) | Query pending or recent jobs and save UTC status reports. |
 | [`download_file`](src/download_file.py) | Compare pending snapshots and download products confirmed by the finished log. |
 | [`read_ztf`](src/read_ztf.py) | Convert `download/*.txt` to `csv/*.csv` or read a single file from Python. |
+| [`ztf_flux_reader`](src/ztf_flux_reader.py) | Convert original TXT/CSV to MJD and difference flux in `flux/`. |
 
 ## Terminal quick start
 
@@ -15,7 +16,7 @@ Run the following steps in a Bash terminal. If you already downloaded ZTF text f
 
 ### 1. Open the project and install the commands
 
-Use Python 3.11 or later and activate the Python environment you want to use. Adjust the `cd` path if your checkout is elsewhere. The editable install adds the dependencies and makes the four commands available in that environment.
+Use Python 3.11 or later and activate the Python environment you want to use. Adjust the `cd` path if your checkout is elsewhere. The editable install adds the dependencies and makes the five commands available in that environment.
 
 ```bash
 cd ~/Documents/ZTF_reader
@@ -167,6 +168,55 @@ print(df[["jd", "filter", "forcediffimflux", "forcediffimfluxunc"]].head())
 
 Use the original text file to read its request metadata with `read_ztf_header()`. The DataFrame reader keeps every epoch and maps ZTF's `-99999` missing-value marker to `NaN`. For quality cuts, grouping by reference image, and calibration, see the [photometry guidelines](ZTF_FEATURE_GUIDELINES.md#filter-group-and-validate-the-photometry).
 
+### 6. Export calibrated difference flux in microJy
+
+`ztf_flux_reader` reads original ZTF TXT files or the full CSV tables from step 5.
+It writes exactly `mjd,flux,flux_err,band` to `flux/<input stem>_diff_flux_uJy.csv`.
+
+**Bash command** (rerun `python3 -m pip install -e .` to register the new command):
+
+```bash
+ztf_flux_reader
+ztf_flux_reader download/batchfp_req0005188484_lc.txt
+ztf_flux_reader csv/batchfp_req0005188484_lc.csv
+```
+
+**Terminal version using Python directly** (from the project root):
+
+```bash
+python3 -m src.ztf_flux_reader
+python3 -m src.ztf_flux_reader download/batchfp_req0005188484_lc.txt
+python3 -m src.ztf_flux_reader csv/batchfp_req0005188484_lc.csv
+```
+
+Without filenames it converts all `download/*.txt`. Supply multiple filenames
+(or `csv/*_lc.csv`) for a batch. Direct execution also works:
+`python3 src/ztf_flux_reader.py download/batchfp_req0005188484_lc.txt`.
+Use `--output-dir PATH` to change the destination. Existing output files are
+skipped; TXT and CSV inputs with the same stem share an output filename.
+Previously reduced four-column flux CSVs are not valid inputs.
+
+| Column | Definition |
+| --- | --- |
+| `mjd` | `jd - 2400000.5`, retaining the input time scale. |
+| `flux` | `forcediffimflux * 10**(0.4 * (23.9 - zpdiff))`, in µJy. |
+| `flux_err` | `forcediffimfluxunc` times the same factor; 1σ statistical error in µJy. |
+| `band` | Original `filter` label, e.g. `ZTF_g`, `ZTF_r`, `ZTF_i`. |
+
+These are science-minus-reference **difference flux densities**, not total source
+fluxes. Zero-point uncertainty is not included. All epochs and negative fluxes
+are retained in their original order; missing values are blank. No quality cuts,
+baseline correction, or extinction correction are applied.
+
+```python
+from src.ztf_flux_reader import read_ztf_flux, save_ztf_flux
+
+df = read_ztf_flux("download/batchfp_req0005188484_lc.txt")
+print(df.head())
+# Raises FileExistsError if this output already exists.
+output = save_ztf_flux("download/batchfp_req0005188484_lc.txt")
+```
+
 ## Project layout
 
 The workflow scripts live in [`src/`](src/). [`pyproject.toml`](pyproject.toml) defines the commands, and [`config.py`](config.py) defines the source directory, shared paths, and IPAC service URLs. The editable install uses `.env` and the data folders at the repository root. You can also run `python3 -m src.<module>` from the repository root.
@@ -181,5 +231,6 @@ The workflow scripts live in [`src/`](src/). [`pyproject.toml`](pyproject.toml) 
 | `log/finished_*.log` | Finished jobs, newest completion first, with exit codes and available product links. |
 | `download/*_lc.txt` | Original IPAC light-curve files, including request metadata. |
 | `csv/*_lc.csv` | Measurement tables exported by `read_ztf.py`. |
+| `flux/*_diff_flux_uJy.csv` | MJD, calibrated difference flux, 1σ error, and band. |
 
-Status reports use UTC. A finished row can still have a warning or error, so check its `exitcode`. The local `.env` and generated files in `job/`, `log/`, `download/`, and `csv/` are Git-ignored.
+Status reports use UTC. A finished row can still have a warning or error, so check its `exitcode`. The local `.env` and generated files in `job/`, `log/`, `download/`, `csv/`, and `flux/` are Git-ignored (directory `.gitkeep` files are tracked).
